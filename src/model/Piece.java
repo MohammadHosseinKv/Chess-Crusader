@@ -1,3 +1,7 @@
+package model;
+
+import logic.GameBoard;
+
 import javax.swing.*;
 
 public abstract class Piece {
@@ -11,16 +15,16 @@ public abstract class Piece {
     protected JLabel pieceLabel;
     protected int moveRadius;
 
-    protected abstract String getAssetName();
+    public abstract String getAssetName();
 
-    protected abstract Integer[][] getMoveDirections(Gameboard gameboard);
+    public abstract Integer[][] getMoveDirections(GameBoard gameboard);
 
-    protected void resetPower() {
+    public void resetPower() {
         Power = Power - temporaryPower;
         temporaryPower = 0;
     }
 
-    protected String getPowerAssetName() {
+    public String getPowerAssetName() {
         return (Power + 26) + "_Chess Crusader.png";
     }
 

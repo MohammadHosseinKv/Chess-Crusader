@@ -1,12 +1,13 @@
 package gui;
 
+import model.Side;
+
 import static util.Util.*;
 import static util.Constants.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -37,42 +38,42 @@ public class StartFrame extends JFrame {
         JLabel GameTitle = new JLabel(TitleImage);
         GameTitle.setBounds((getWidth() / 3) - (getWidth() / 4), (getHeight() / 40), (int) (getWidth() / 1.2), getHeight() / 3);
 
-        JButton CreateGame = createButton("Create Game",-120,(getHeight()/2)-100,150,50,Color.WHITE,Color.BLACK,Color.BLACK);
-
-        JButton Joingame = createButton("Join Game",-120,getHeight()/2,150,50,Color.WHITE,Color.BLACK,Color.BLACK);
+        JButton CreateGame = createButton("Create Game", -120, (getHeight() / 2) - 100, 150, 50, Color.WHITE, Color.BLACK, Color.BLACK);
+        CreateGame.addActionListener(this::handleCreateGameButtonAction);
+        JButton JoinGame = createButton("Join Game", -120, getHeight() / 2, 150, 50, Color.WHITE, Color.BLACK, Color.BLACK);
+        JoinGame.addActionListener(this::handleJoinGameButtonAction);
 
         add(CreateGame);
-        add(Joingame);
+        add(JoinGame);
         add(GameTitle);
         add(FrameBackground);
         centralizeFrame(this);
         setVisible(true);
     }
 
-    private JButton createButton(String buttonText,int x,int y,int width,int height,Color backgroundColor,Color foregroundColor,Color borderColor){
+    private JButton createButton(String buttonText, int x, int y, int width, int height, Color backgroundColor, Color foregroundColor, Color borderColor) {
         JButton button = new JButton(buttonText);
         button.setBounds(x, y, width, height);
         button.setBackground(backgroundColor);
         button.setForeground(foregroundColor);
         button.setBorder(BorderFactory.createLineBorder(borderColor));
         button.setFocusable(false);
-        button.addActionListener(this::handleJoinGameButtonAction);
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                handleMouseEnterAndExitToButton(e,button,x+120,y,width,height,Color.WHITE,Color.BLACK, Color.BLACK);
+                handleMouseEnterAndExitToButton(e, button, x + 120, y, width, height, Color.WHITE, Color.BLACK, Color.BLACK);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                handleMouseEnterAndExitToButton(e,button,x,y,width,height,Color.WHITE,Color.BLACK, Color.BLACK);
+                handleMouseEnterAndExitToButton(e, button, x, y, width, height, Color.WHITE, Color.BLACK, Color.BLACK);
             }
         });
 
         return button;
     }
 
-    private void handleMouseEnterAndExitToButton(MouseEvent e,JButton button,int x,int y,int width,int height,Color backgroundColor,Color borderColor,Color foregroundColor) {
+    private void handleMouseEnterAndExitToButton(MouseEvent e, JButton button, int x, int y, int width, int height, Color backgroundColor, Color borderColor, Color foregroundColor) {
         button.setBackground(backgroundColor);
         button.setBorder(BorderFactory.createLineBorder(borderColor));
         button.setForeground(foregroundColor);
@@ -81,27 +82,29 @@ public class StartFrame extends JFrame {
     }
 
     private void handleJoinGameButtonAction(ActionEvent e) {
-        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT)){
+        try {
+            Socket socket = new Socket(SERVER_IP, SERVER_PORT);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             this.dispose();
-//                        new Main(Side.BLACK, socket, objectOutputStream, objectInputStream);
+            new GameFrame(Side.BLACK, socket, objectOutputStream, objectInputStream);
         } catch (IOException ex) {
             ex.printStackTrace();
-            showOutput(this,ex.getMessage());
+            showOutput(this, ex.getMessage());
         }
     }
 
     private void handleCreateGameButtonAction(ActionEvent e) {
-        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)){
+        try {
+            ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
             Socket socket = serverSocket.accept();
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             this.dispose();
-//                        new Game(Side.WHITE, socket, objectOutputStream, objectInputStream);
+          new GameFrame(Side.WHITE, socket, objectOutputStream, objectInputStream);
         } catch (IOException ex) {
             ex.printStackTrace();
-            showOutput(this,ex.getMessage());
+            showOutput(this, ex.getMessage());
         }
     }
 

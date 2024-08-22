@@ -1,30 +1,39 @@
+package model;
+
+import logic.GameBoard;
+import logic.canIncreaseOrDecreaseAdjacentPiecesPower;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class Castle extends Piece implements canIncreaseOrDecreaseAdjacentPiecesPower {
+public class Soldier extends Piece implements canIncreaseOrDecreaseAdjacentPiecesPower {
 
-    public Castle(int x, int y, Side Side) {
+    public Soldier(int x, int y, Side Side) {
         super(x, y, Side, 1, 1);
     }
 
     @Override
-    protected String getAssetName() {
-        return (this.Side.equals(Side.WHITE) ? 23 : 24) + "_Chess Crusader.png";
+    public String getAssetName() {
+        return (this.Side.equals(Side.WHITE) ? 19 : 20) + "_Chess Crusader.png";
     }
 
 
     @Override
-    protected Integer[][] getMoveDirections(Gameboard gameboard) {
-        int[][] moveDirections = Constants.ADJACENT_DIRECTIONS;
+    public Integer[][] getMoveDirections(GameBoard gameboard) {
+        int[][] moveDirections;
         List<Integer[]> possibleMoves = new ArrayList<>();
+        moveDirections = switch (this.Side) {
+            case Side.WHITE -> new int[][]{{1, 1}, {0, 1}, {-1, 1}};
+            case Side.BLACK -> new int[][]{{-1, -1}, {0, -1}, {1, -1}};
+        };
 
         int moveRadius = this.moveRadius;
         while (moveRadius > 0) {
             for (int i = 0; i < moveDirections.length; i++) {
                 try {
-                    if (Gameboard.GameTiles[y + moveDirections[i][1] * moveRadius][x + moveDirections[i][0] * moveRadius] == null) {
+                    if (GameBoard.GameTiles[y + moveDirections[i][1] * moveRadius][x + moveDirections[i][0] * moveRadius] == null) {
                         possibleMoves.add(new Integer[]{x + moveDirections[i][0] * moveRadius, y + moveDirections[i][1] * moveRadius});
-                    } else if (Gameboard.GameTiles[y + moveDirections[i][1] * moveRadius][x + moveDirections[i][0] * moveRadius] instanceof Piece piece) {
+                    } else if (GameBoard.GameTiles[y + moveDirections[i][1] * moveRadius][x + moveDirections[i][0] * moveRadius] instanceof Piece piece) {
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
                             possibleMoves.add(new Integer[]{x + moveDirections[i][0] * moveRadius, y + moveDirections[i][1] * moveRadius});
                         }
@@ -40,17 +49,15 @@ public class Castle extends Piece implements canIncreaseOrDecreaseAdjacentPieces
     }
 
     @Override
-    public void increaseOrDecreaseAdjacentPiecesPower(Gameboard gameboard, Piece targetPiece) {
+    public void increaseOrDecreaseAdjacentPiecesPower(GameBoard gameboard, Piece targetPiece) {
         try {
-            if (targetPiece.getSide().equals(this.Side)) {
+            if (targetPiece.getSide().equals(this.Side) && targetPiece instanceof Soldier) {
                 targetPiece.setTemporaryPower(targetPiece.getTemporaryPower() + 1);
                 targetPiece.setPower(targetPiece.getPower() + 1);
             }
+
         } catch (ArrayIndexOutOfBoundsException e) {
             // ignored
-
         }
-
     }
-
 }
