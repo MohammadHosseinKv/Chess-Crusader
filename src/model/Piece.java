@@ -1,7 +1,5 @@
 package model;
 
-import logic.GameBoard;
-
 import javax.swing.*;
 
 public abstract class Piece {
@@ -17,7 +15,7 @@ public abstract class Piece {
 
     public abstract String getAssetName();
 
-    public abstract Integer[][] getMoveDirections(GameBoard gameboard);
+    public abstract Integer[][] getMoveDirections();
 
     public void resetPower() {
         Power = Power - temporaryPower;

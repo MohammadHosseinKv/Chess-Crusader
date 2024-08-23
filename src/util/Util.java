@@ -22,13 +22,13 @@ public final class Util {
     public static final int[][] ADJACENT_DIRECTIONS = {WEST_DIRECTION, EAST_DIRECTION, NORTH_DIRECTION, SOUTH_DIRECTION,
             NORTH_WEST_DIRECTION, NORTH_EAST_DIRECTION, SOUTH_WEST_DIRECTION, SOUTH_EAST_DIRECTION};
 
-    public static Set<Piece> getAdjacentPieces(GameBoard gameBoard,int row, int col) {
+    public static Set<Piece> getAdjacentPieces(int row, int col) {
         Set<Piece> adjacentPieces = new HashSet<>();
         for (int[] adjacentDirection : ADJACENT_DIRECTIONS) {
             int dirX = adjacentDirection[0];
             int dirY = adjacentDirection[1];
-            if (coordinateIsInGameBounds(gameBoard, row + dirY, col + dirX)) {
-                if (gameBoard.GameTiles[row + dirY][col + dirX] != null && gameBoard.GameTiles[row + dirY][col + dirX] instanceof Piece piece) {
+            if (coordinateIsInGameBounds(row + dirY, col + dirX)) {
+                if (GameBoard.GameTiles[row + dirY][col + dirX] != null && GameBoard.GameTiles[row + dirY][col + dirX] instanceof Piece piece) {
                     adjacentPieces.add(piece);
                 }
             }
@@ -36,8 +36,8 @@ public final class Util {
         return adjacentPieces;
     }
 
-    public static boolean coordinateIsInGameBounds(GameBoard gameBoard,int row, int col) {
-        return row > 0 && row < gameBoard.GameTiles.length && col > 0 && col < gameBoard.GameTiles[0].length;
+    public static boolean coordinateIsInGameBounds(int row, int col) {
+        return row > 0 && row < GameBoard.GameTiles.length && col > 0 && col < GameBoard.GameTiles[0].length;
     }
 
     public static boolean showOutput(Component parentComponent, Object outputMessage) {

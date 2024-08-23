@@ -1,44 +1,22 @@
 package logic;
 
 import controller.GameController;
-import gui.GameFrame;
 import model.*;
 
-import static util.Constants.*;
 import static util.Util.*;
 
-import javax.swing.*;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Game implements GameBoard {
 
-    Thread RequestListener;
-    Side Turn;
-    Socket socket;
-    ObjectOutputStream objectOutputStream;
-    ObjectInputStream objectInputStream;
-    GameFrame gameFrame;
-    Side side;
-
-    public Game(Side initialTurn, Socket socket, ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Side side, GameFrame gameFrame) {
-        this.gameFrame = gameFrame;
-        this.Turn = initialTurn;
-        this.socket = socket;
-        this.objectOutputStream = objectOutputStream;
-        this.objectInputStream = objectInputStream;
-        this.side = side;
-    }
-
-    private Side turn;
+    private Side side;
+    private Side Turn;
     private GameController controller;
 
-    public Game(Side initialTurn, GameController controller) {
-        this.turn = initialTurn;
+    public Game(Side side, GameController controller, Side initialTurn) {
+        this.side = side;
+        this.Turn = initialTurn;
         this.controller = controller;
     }
 
@@ -67,15 +45,24 @@ public class Game implements GameBoard {
         GameTiles[7][7] = new Archer(7, 7, Side.BLACK);
         for (int i = 0; i < GameTiles[6].length; i++)
             GameTiles[6][i] = new Soldier(i, 6, Side.BLACK);
+
+        // calculate pieces power
+        for (int i = 0; i < GameTiles.length; i++) {
+            for (int j = 0; j < GameTiles[i].length; j++) {
+                if (GameTiles[i][j] != null && GameTiles[i][j] instanceof Piece piece) {
+                    calculatePower(piece);
+                }
+            }
+        }
     }
 
     @Override
     public void movePiece(int row, int col, int destRow, int destCol) {
         Piece piece = (Piece) GameTiles[row][col];
         Set<Piece> adjacentPieces = new HashSet<>();
-        if(piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
-            adjacentPieces.addAll(getAdjacentPieces(row,col));
-            adjacentPieces.addAll(getAdjacentPieces(destRow,destCol));
+        if (piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+            adjacentPieces.addAll(getAdjacentPieces(row, col));
+            adjacentPieces.addAll(getAdjacentPieces(destRow, destCol));
         }
         GameTiles[destRow][destCol] = piece;
         GameTiles[row][col] = null;
@@ -89,16 +76,17 @@ public class Game implements GameBoard {
 
     @Override
     public void attackPiece(int row, int col, int destRow, int destCol) {
-        checkWinCondition(destRow,destCol); // to be implemented
+        checkWinCondition(destRow, destCol); // to be implemented
         GameTiles[destRow][destCol] = null;
         movePiece(row, col, destRow, destCol);
     }
 
     private void checkWinCondition(int destRow, int destCol) {
-        if(GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle){
-            
+        if (GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle) {
+
         }
     }
+
 
     @Override
     public void changeTurn() {
@@ -106,7 +94,7 @@ public class Game implements GameBoard {
     }
 
     public Side getTurn() {
-        return turn;
+        return Turn;
     }
 
     public void addRequestListener() {
@@ -186,68 +174,14 @@ public class Game implements GameBoard {
         int row = piece.getY();
         int col = piece.getX();
         for (int j = 0; j < ADJACENT_DIRECTIONS.length; j++) {
-            try {
-                int dirX = ADJACENT_DIRECTIONS[j][0];
-                int dirY = ADJACENT_DIRECTIONS[j][1];
+            int dirX = ADJACENT_DIRECTIONS[j][0];
+            int dirY = ADJACENT_DIRECTIONS[j][1];
+            if (coordinateIsInGameBounds(row + dirY, col + dirX)) {
                 if (GameTiles[row + dirY][col + dirX] != null && GameTiles[row + dirY][col + dirX] instanceof canIncreaseOrDecreaseAdjacentPiecesPower pieceThatCanIncreaseOrDecreaseAdjacentPiecesPower) {
-                    pieceThatCanIncreaseOrDecreaseAdjacentPiecesPower.increaseOrDecreaseAdjacentPiecesPower(this, piece);
-                }
-            } catch (ArrayIndexOutOfBoundsException ex) {
-                // ignore
-            }
-        }
-    }
-
-    private void requestListenerRunnable() {
-        while (socket.isConnected()) {
-            try {
-                Command Request = (Command) objectInputStream.readObject();
-                switch (Request) {
-                    case Command.MOVE_PIECE:
-                        int row = (Integer) objectInputStream.readObject();
-                        int col = (Integer) objectInputStream.readObject();
-                        int destRow = (Integer) objectInputStream.readObject();
-                        int destCol = (Integer) objectInputStream.readObject();
-                        movePiece(row, col, destRow, destCol);
-                        break;
-                    case Command.ATTACK_PIECE:
-                        row = (Integer) objectInputStream.readObject();
-                        col = (Integer) objectInputStream.readObject();
-                        destRow = (Integer) objectInputStream.readObject();
-                        destCol = (Integer) objectInputStream.readObject();
-                        attackPiece(row, col, destRow, destCol);
-                        break;
-                    case Command.CHANGE_TURN:
-                        changeTurn();
-                        break;
-                    case Command.GAME_OVER:
-                        showOutput(gameFrame, "Game Over , you lost.");
-                        System.exit(0);
-                    default:
-                        JOptionPane.showMessageDialog(null, "Invalid Request:  " + Request);
-                        break;
-                }
-            } catch (IOException | ClassNotFoundException e) {
-                try {
-                    socket.close();
-                    e.printStackTrace();
-                    System.exit(0);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                    pieceThatCanIncreaseOrDecreaseAdjacentPiecesPower.increaseOrDecreaseAdjacentPiecesPower(piece);
                 }
             }
         }
     }
 
-    public void sendRequest(Object... args) {
-        try {
-            for (Object arg : args) {
-                objectOutputStream.writeObject(arg);
-                objectOutputStream.flush();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

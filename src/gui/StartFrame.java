@@ -1,18 +1,16 @@
 package gui;
 
+import controller.GameController;
 import model.Side;
+import network.SocketManager;
 
 import static util.Util.*;
 import static util.Constants.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -84,10 +82,8 @@ public class StartFrame extends JFrame {
     private void handleJoinGameButtonAction(ActionEvent e) {
         try {
             Socket socket = new Socket(SERVER_IP, SERVER_PORT);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             this.dispose();
-            new GameFrame(Side.BLACK, socket, objectOutputStream, objectInputStream);
+            new GameController(Side.BLACK, new SocketManager(socket));
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());
@@ -98,10 +94,8 @@ public class StartFrame extends JFrame {
         try {
             ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
             Socket socket = serverSocket.accept();
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
             this.dispose();
-          new GameFrame(Side.WHITE, socket, objectOutputStream, objectInputStream);
+            new GameController(Side.WHITE, new SocketManager(socket));
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());

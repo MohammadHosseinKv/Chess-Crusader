@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static util.Util.ADJACENT_DIRECTIONS;
+import static util.Util.coordinateIsInGameBounds;
 
 public class Knight extends Piece {
 
@@ -20,27 +21,26 @@ public class Knight extends Piece {
 
 
     @Override
-    public Integer[][] getMoveDirections(GameBoard gameboard) {
+    public Integer[][] getMoveDirections() {
         int[][] moveDirections = ADJACENT_DIRECTIONS;
         List<Integer[]> possibleMoves = new ArrayList<>();
         int moveRadius = this.moveRadius;
         while (moveRadius > 0) {
             for (int i = 0; i < moveDirections.length; i++) {
-                try {
-                    if (GameBoard.GameTiles[y + (moveDirections[i][1] * moveRadius)][x + (moveDirections[i][0] * moveRadius)] == null) {
-                        possibleMoves.add(new Integer[]{x + (moveDirections[i][0] * moveRadius), y + (moveDirections[i][1] * moveRadius)});
-                    } else if (GameBoard.GameTiles[y + (moveDirections[i][1] * moveRadius)][x + (moveDirections[i][0] * moveRadius)] instanceof Piece piece) {
+                int row = y + moveDirections[i][1] * moveRadius;
+                int col = x + moveDirections[i][0] * moveRadius;
+                if(coordinateIsInGameBounds(row,col)) {
+                    if (GameBoard.GameTiles[row][col] == null) {
+                        possibleMoves.add(new Integer[]{col, row});
+                    } else if (GameBoard.GameTiles[row][col] instanceof Piece piece) {
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
-                            possibleMoves.add(new Integer[]{x + (moveDirections[i][0] * moveRadius), y + (moveDirections[i][1] * moveRadius)});
+                            possibleMoves.add(new Integer[]{col, row});
                         }
                     }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    // ignore
                 }
             }
             moveRadius--;
         }
-//        return Util.storeDirectionIntegerArrayListinArray(possibleMoves);
         return possibleMoves.toArray(new Integer[0][0]);
     }
 

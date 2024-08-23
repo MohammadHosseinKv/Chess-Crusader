@@ -3,16 +3,13 @@ package controller;
 import gui.GameFrame;
 import logic.Command;
 import logic.Game;
-import logic.GameBoard;
-import model.Piece;
 import model.Side;
 import network.SocketManager;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 
 import static logic.Command.*;
+import static util.Constants.*;
 import static util.Util.showOutput;
 
 public class GameController {
@@ -22,8 +19,9 @@ public class GameController {
 
     public GameController(Side side, SocketManager socketManager) {
         this.socketManager = socketManager;
-        this.gameFrame = new GameFrame(side, this);
-        this.game = new Game(side, this);
+        this.gameFrame = new GameFrame(side, this,INITIAL_TURN_SIDE);
+        this.game = new Game(side, this,INITIAL_TURN_SIDE);
+        start();
     }
 
     public void start() {
