@@ -1,5 +1,6 @@
 package logic;
 
+import controller.GameController;
 import gui.GameFrame;
 import model.*;
 
@@ -24,14 +25,21 @@ public class Game implements GameBoard {
     GameFrame gameFrame;
     Side side;
 
-    public Game(Side initialTurn, Socket socket,ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Side side, GameFrame gameFrame) {
+    public Game(Side initialTurn, Socket socket, ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream, Side side, GameFrame gameFrame) {
         this.gameFrame = gameFrame;
         this.Turn = initialTurn;
         this.socket = socket;
         this.objectOutputStream = objectOutputStream;
         this.objectInputStream = objectInputStream;
         this.side = side;
+    }
 
+    private Side turn;
+    private GameController controller;
+
+    public Game(Side initialTurn, GameController controller) {
+        this.turn = initialTurn;
+        this.controller = controller;
     }
 
     @Override
@@ -59,75 +67,119 @@ public class Game implements GameBoard {
         GameTiles[7][7] = new Archer(7, 7, Side.BLACK);
         for (int i = 0; i < GameTiles[6].length; i++)
             GameTiles[6][i] = new Soldier(i, 6, Side.BLACK);
-
     }
 
     @Override
     public void movePiece(int row, int col, int destRow, int destCol) {
-        int TILE_WIDTH = TILE_DIMENSION.width;
-        int TILE_HEIGHT = TILE_DIMENSION.height;
-        Piece piece = ((Piece) GameTiles[row][col]);
-        JLabel pieceLabel = piece.getPieceLabel();
-        pieceLabel.setBounds(destCol * TILE_WIDTH, destRow * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
-        pieceLabel.removeAll();
-        Set<Piece> adjacentPieces = null;
-        if (piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
-            adjacentPieces = new HashSet<>();
-            for (int i = 0; i < ADJACENT_DIRECTIONS.length; i++) {
-                int dirX = ADJACENT_DIRECTIONS[i][0];
-                int dirY = ADJACENT_DIRECTIONS[i][1];
-                try {
-                    if (GameTiles[row + dirY][col + dirX] != null && GameTiles[row + dirY][col + dirX] instanceof Piece adjacentPiece) {
-                        adjacentPieces.add(adjacentPiece);
-                    }
-                    if (GameTiles[destRow + dirY][destCol + dirX] != null && GameTiles[destRow + dirY][destCol + dirX] instanceof Piece adjacentPiece) {
-                        if (!adjacentPiece.equals(piece))
-                            adjacentPieces.add(adjacentPiece);
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    // ignored
-                }
-            }
+        Piece piece = (Piece) GameTiles[row][col];
+        Set<Piece> adjacentPieces = new HashSet<>();
+        if(piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+            adjacentPieces.addAll(getAdjacentPieces(row,col));
+            adjacentPieces.addAll(getAdjacentPieces(destRow,destCol));
         }
-
-        piece.setX(destCol);
-        piece.setY(destRow);
         GameTiles[destRow][destCol] = piece;
         GameTiles[row][col] = null;
-        if (adjacentPieces != null && !adjacentPieces.isEmpty()) {
-            for (Piece adjP : adjacentPieces) {
-                calculatePower(adjP);
-                gameFrame.createPiecePowerLabel(adjP);
-            }
-        }
+        if (!adjacentPieces.isEmpty())
+            for (Piece p : adjacentPieces)
+                calculatePower(p);
         calculatePower(piece);
-        gameFrame.createPiecePowerLabel(piece);
-        gameFrame.repaint();
+        piece.setX(destCol);
+        piece.setY(destRow);
     }
 
     @Override
     public void attackPiece(int row, int col, int destRow, int destCol) {
-        Piece targetPiece = ((Piece) GameTiles[destRow][destCol]);
-        gameFrame.getJLayeredPane().remove(targetPiece.getPieceLabel());
+        checkWinCondition(destRow,destCol); // to be implemented
         GameTiles[destRow][destCol] = null;
         movePiece(row, col, destRow, destCol);
-        if (targetPiece instanceof Castle) {
-            gameFrame.clearMoveLabels();
-            sendRequest(Command.GAME_OVER);
-            showOutput(gameFrame, " Won the Game.");
-            System.exit(0);
+    }
+
+    private void checkWinCondition(int destRow, int destCol) {
+        if(GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle){
+            
         }
-        gameFrame.repaint();
     }
 
     @Override
     public void changeTurn() {
-        String lastTurn = Turn.name();
         Turn = Turn.equals(Side.WHITE) ? Side.BLACK : Side.WHITE;
-        gameFrame.Turn = Turn;
-        int lastIndexOfTurn = gameFrame.getTitle().lastIndexOf(lastTurn);
-        gameFrame.setTitle(gameFrame.getTitle().substring(0, lastIndexOfTurn) + gameFrame.getTitle().substring(lastIndexOfTurn).replace(lastTurn, Turn.name()));
     }
+
+    public Side getTurn() {
+        return turn;
+    }
+
+    public void addRequestListener() {
+        controller.handleIncomingRequest();
+    }
+
+//
+//    @Override
+//    public void movePiece(int row, int col, int destRow, int destCol) {
+//        int TILE_WIDTH = TILE_DIMENSION.width;
+//        int TILE_HEIGHT = TILE_DIMENSION.height;
+//        Piece piece = ((Piece) GameTiles[row][col]);
+//        JLabel pieceLabel = piece.getPieceLabel();
+//        pieceLabel.setBounds(destCol * TILE_WIDTH, destRow * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+//        pieceLabel.removeAll();
+//        Set<Piece> adjacentPieces = null;
+//        if (piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+//            adjacentPieces = new HashSet<>();
+//            for (int i = 0; i < ADJACENT_DIRECTIONS.length; i++) {
+//                int dirX = ADJACENT_DIRECTIONS[i][0];
+//                int dirY = ADJACENT_DIRECTIONS[i][1];
+//                try {
+//                    if (GameTiles[row + dirY][col + dirX] != null && GameTiles[row + dirY][col + dirX] instanceof Piece adjacentPiece) {
+//                        adjacentPieces.add(adjacentPiece);
+//                    }
+//                    if (GameTiles[destRow + dirY][destCol + dirX] != null && GameTiles[destRow + dirY][destCol + dirX] instanceof Piece adjacentPiece) {
+//                        if (!adjacentPiece.equals(piece))
+//                            adjacentPieces.add(adjacentPiece);
+//                    }
+//                } catch (ArrayIndexOutOfBoundsException e) {
+//                    // ignored
+//                }
+//            }
+//        }
+//
+//        piece.setX(destCol);
+//        piece.setY(destRow);
+//        GameTiles[destRow][destCol] = piece;
+//        GameTiles[row][col] = null;
+//        if (adjacentPieces != null && !adjacentPieces.isEmpty()) {
+//            for (Piece adjP : adjacentPieces) {
+//                calculatePower(adjP);
+//                gameFrame.createPiecePowerLabel(adjP);
+//            }
+//        }
+//        calculatePower(piece);
+//        gameFrame.createPiecePowerLabel(piece);
+//        gameFrame.repaint();
+//    }
+//
+//    @Override
+//    public void attackPiece(int row, int col, int destRow, int destCol) {
+//        Piece targetPiece = ((Piece) GameTiles[destRow][destCol]);
+//        gameFrame.getJLayeredPane().remove(targetPiece.getPieceLabel());
+//        GameTiles[destRow][destCol] = null;
+//        movePiece(row, col, destRow, destCol);
+//        if (targetPiece instanceof Castle) {
+//            gameFrame.clearMoveLabels();
+//            sendRequest(Command.GAME_OVER);
+//            showOutput(gameFrame, " Won the Game.");
+//            System.exit(0);
+//        }
+//        gameFrame.repaint();
+//    }
+//
+//    @Override
+//    public void changeTurn() {
+//        String lastTurn = Turn.name();
+//        Turn = Turn.equals(Side.WHITE) ? Side.BLACK : Side.WHITE;
+//        gameFrame.Turn = Turn;
+//        int lastIndexOfTurn = gameFrame.getTitle().lastIndexOf(lastTurn);
+//        gameFrame.setTitle(gameFrame.getTitle().substring(0, lastIndexOfTurn) + gameFrame.getTitle().substring(lastIndexOfTurn).replace(lastTurn, Turn.name()));
+//    }
 
     public void calculatePower(Piece piece) {
         piece.resetPower();
@@ -143,13 +195,6 @@ public class Game implements GameBoard {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 // ignore
             }
-        }
-    }
-
-    public synchronized void addRequestListener() {
-        if (RequestListener == null) {
-            RequestListener = new Thread(this::requestListenerRunnable);
-            RequestListener.start();
         }
     }
 
@@ -194,15 +239,15 @@ public class Game implements GameBoard {
         }
     }
 
-public void sendRequest(Object... args) {
-    try {
-        for (Object arg : args) {
-            objectOutputStream.writeObject(arg);
-            objectOutputStream.flush();
-        }
+    public void sendRequest(Object... args) {
+        try {
+            for (Object arg : args) {
+                objectOutputStream.writeObject(arg);
+                objectOutputStream.flush();
+            }
 
-    } catch (IOException e) {
-        e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-}
 }

@@ -1,13 +1,16 @@
 package gui;
 
+import controller.GameController;
 import logic.Game;
+import logic.GameBoard;
+import logic.canIncreaseOrDecreaseAdjacentPiecesPower;
 import model.Piece;
 import model.Side;
 
 import static logic.Command.*;
 import static util.Constants.*;
-import static util.Util.centralizeFrame;
-import static util.Util.showOutput;
+import static util.Util.*;
+import static util.Util.getAdjacentPieces;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,14 +24,11 @@ import java.util.List;
 
 public class GameFrame extends JFrame {
 
-    Game game;
-    Socket socket;
-    ObjectOutputStream objectOutputStream;
-    ObjectInputStream objectInputStream;
-    Side side;
-    public Side Turn = Side.WHITE;
-    Map<Piece, List<JLabel>> moveLabels = new HashMap<>();
+    GameController controller;
     JLayeredPane layeredPane;
+    Side side;
+    Map<Piece, List<JLabel>> moveLabels = new HashMap<>();
+    Map<Point,JLabel> pieceLabelMap = new HashMap<>();
     int TILE_WIDTH = TILE_DIMENSION.width;
     int TILE_HEIGHT = TILE_DIMENSION.height;
 
@@ -52,6 +52,53 @@ public class GameFrame extends JFrame {
         this.socket = socket;
         this.side = side;
 
+        centralizeFrame(this);
+    }
+
+    public GameFrame(Side side, GameController controller) {
+        this.side = side;
+        this.controller = controller;
+        // Initialize UI components
+
+
+
+
+
+        centralizeFrame(this);
+    }
+
+    public JLabel getPieceLabelAt(int row,int col){
+        return pieceLabelMap.get(new Point(col,row));
+    }
+
+    public void removePieceFromBoard(JLabel pieceLabel){
+        layeredPane.remove(pieceLabel);
+        layeredPane.repaint();
+        pieceLabelMap.values().remove(pieceLabel);
+    }
+
+    public void addPieceToBoard(int row,int col,JLabel pieceLabel){
+        Point piecePosition = new Point(col,row);
+        pieceLabelMap.put(piecePosition,pieceLabel);
+        layeredPane.add(pieceLabel,PIECE_LAYER);
+        pieceLabel.setLocation(computeLocation(row,col));
+        layeredPane.repaint();
+    }
+
+    public void removePiece(int row,int col){
+        Point piecePosition = new Point(col,row);
+        JLabel pieceLabel = pieceLabelMap.get(piecePosition);
+        if(pieceLabel != null){
+            removePieceFromBoard(pieceLabel);
+            pieceLabelMap.remove(piecePosition);
+        }
+    }
+
+    private Point computeLocation(int row,int col){
+        return new Point(col*TILE_WIDTH,row*TILE_HEIGHT);
+    }
+
+    public void initUI() {
         int GAME_WIDTH = GAME_DIMENSION.width;
         int GAME_HEIGHT = GAME_DIMENSION.height;
         int TILE_WIDTH = TILE_DIMENSION.width;
@@ -150,7 +197,35 @@ public class GameFrame extends JFrame {
         }
 
         layeredPane.repaint();
-        centralizeFrame(this);
+    }
+
+    public void updateUIAfterMove(int row, int col, int destRow, int destCol) {
+        Piece piece = (Piece) GameBoard.GameTiles[destRow][destCol];
+        JLabel pieceLabel = getPieceLabelAt(row,col);
+        if(pieceLabel!=null){
+            pieceLabelMap.remove(new Point(col, row));
+            pieceLabelMap.put(new Point(destCol,destRow), pieceLabel);
+            pieceLabel.setLocation(computeLocation(destRow, destCol));
+        }
+        Set<Piece> adjacentPieces = new HashSet<>();
+        if(piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+            adjacentPieces.addAll(getAdjacentPieces(row,col));
+            adjacentPieces.addAll(getAdjacentPieces(destRow,destCol));
+        }
+        if(!adjacentPieces.isEmpty())
+            for(Piece adjacentPiece : adjacentPieces)
+                createPiecePowerLabel(adjacentPiece);
+        createPiecePowerLabel(piece);
+        repaint();
+    }
+
+    public void updateUIAfterAttack(int row, int col, int destRow, int destCol) {
+        removePiece(destRow,destCol);
+        updateUIAfterMove(row, col, destRow, destCol);
+    }
+
+    public void updateTurn(Side turn) {
+        setTitle("Chess Crusader - You Are " + side.name() + " | Turn: " + turn);
     }
 
     private JLabel createSelectedPieceBackgroundLabel(int pieceCol, int pieceRow) {
@@ -181,7 +256,7 @@ public class GameFrame extends JFrame {
     }
 
     public void createPiecePowerLabel(Piece piece) {
-        JLabel pieceLabel = piece.getPieceLabel();
+        JLabel pieceLabel = getPieceLabelAt(piece.getY(),piece.getX());
         pieceLabel.removeAll();
         if (piece.getPower() < 0) {
             JLabel piecePowerLabel = new JLabel();
