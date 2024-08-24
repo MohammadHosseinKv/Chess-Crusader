@@ -7,6 +7,7 @@ import static main.java.MohammadHosseinKv.model.Side.BLACK;
 import static main.java.MohammadHosseinKv.model.Side.WHITE;
 import static main.java.MohammadHosseinKv.util.Util.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +25,10 @@ public class Game implements GameBoard {
 
     @Override
     public void initGameBoardPieces() {
+        // fill game board with null pointer
+        for (Object[] GameTilesRow : GameTiles)
+            Arrays.fill(GameTilesRow, null);
+
         // initialize white pieces
         GameTiles[0][0] = new Archer(0, 0, WHITE);
         GameTiles[0][1] = new Archer(1, 0, WHITE);
@@ -78,15 +83,15 @@ public class Game implements GameBoard {
 
     @Override
     public void attackPiece(int row, int col, int destRow, int destCol) {
-        if(checkWinCondition(destRow, destCol)) return;
+        if (checkWinCondition(destRow, destCol)) return;
         GameTiles[destRow][destCol] = null;
         movePiece(row, col, destRow, destCol);
     }
 
     private boolean checkWinCondition(int destRow, int destCol) {
         if (GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle castle) {
-            if(castle.getSide() != this.side){
-                controller.gameOver(this.side,true);
+            if (castle.getSide() != this.side) {
+                controller.gameOver(this.side, true);
                 return true;
             }
         }
