@@ -1,7 +1,7 @@
 package main.java.MohammadHosseinKv.util;
 
-import main.java.MohammadHosseinKv.logic.GameBoard;
-import main.java.MohammadHosseinKv.model.Side;
+import main.java.MohammadHosseinKv.logic.*;
+import main.java.MohammadHosseinKv.model.*;
 
 import java.awt.*;
 
@@ -18,11 +18,14 @@ public class Constants {
     public static final Side INITIAL_TURN_SIDE = Side.WHITE;
     // Resources Path
     public static final String RESOURCES_FOLDER_PATH = "assets/";
-    public static final String SELECTED_PIECE_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH+"13_Chess Crusader.png";
-    public static final String MOVE_CIRCLE_RESOURCE_PATH = RESOURCES_FOLDER_PATH+"14_Chess Crusader.png";
-    public static final String GAME_BOARD_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH+"36_Chess Crusader.png";
-    public static final String START_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH+"welcomebg.png";
-    public static final String START_TITLE_RESOURCE_PATH = RESOURCES_FOLDER_PATH+"ccTitle.png";
+    public static final String GAME_DOCUMENT_PDF_FILE_PATH = "AP14022-FinalProject.pdf";
+    public static final String SELECTED_PIECE_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH + "13_Chess Crusader.png";
+    public static final String MOVE_CIRCLE_RESOURCE_PATH = RESOURCES_FOLDER_PATH + "14_Chess Crusader.png";
+    public static final String GAME_BOARD_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH + "36_Chess Crusader.png";
+    public static final String START_BACKGROUND_RESOURCE_PATH = RESOURCES_FOLDER_PATH + "welcomebg.png";
+    public static final String START_TITLE_RESOURCE_PATH = RESOURCES_FOLDER_PATH + "ccTitle.png";
+    // GitHub Repository
+    public static final String GITHUB_REPOSITORY = "https://github.com/MohammadHosseinKv/Chess-Crusader";
 
 
 }

@@ -1,18 +1,16 @@
 package main.java.MohammadHosseinKv.controller;
 
-import main.java.MohammadHosseinKv.gui.GameFrame;
-import main.java.MohammadHosseinKv.gui.StartFrame;
-import main.java.MohammadHosseinKv.logic.Command;
-import main.java.MohammadHosseinKv.logic.Game;
-import main.java.MohammadHosseinKv.model.Side;
-import main.java.MohammadHosseinKv.network.SocketManager;
+import main.java.MohammadHosseinKv.gui.*;
+import main.java.MohammadHosseinKv.logic.*;
+import main.java.MohammadHosseinKv.model.*;
+import main.java.MohammadHosseinKv.network.*;
 
 import javax.swing.*;
 import java.io.IOException;
 
 import static main.java.MohammadHosseinKv.logic.Command.*;
 import static main.java.MohammadHosseinKv.util.Constants.*;
-import static main.java.MohammadHosseinKv.util.Util.showOutput;
+import static main.java.MohammadHosseinKv.util.Util.*;
 
 public class GameController {
     private Game game;

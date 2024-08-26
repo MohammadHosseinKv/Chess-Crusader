@@ -4,9 +4,11 @@ import main.java.MohammadHosseinKv.logic.GameBoard;
 import main.java.MohammadHosseinKv.model.Piece;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.net.*;
+import java.util.*;
 
 public final class Util {
 
@@ -28,7 +30,8 @@ public final class Util {
             int dirX = adjacentDirection[0];
             int dirY = adjacentDirection[1];
             if (coordinateIsInGameBounds(row + dirY, col + dirX)) {
-                if (GameBoard.GameTiles[row + dirY][col + dirX] != null && GameBoard.GameTiles[row + dirY][col + dirX] instanceof Piece piece) {
+                if (GameBoard.GameTiles[row + dirY][col + dirX] != null && GameBoard.GameTiles[row + dirY][col + dirX] instanceof Piece) {
+                    Piece piece = (Piece) GameBoard.GameTiles[row + dirY][col + dirX];
                     adjacentPieces.add(piece);
                 }
             }
@@ -46,6 +49,16 @@ public final class Util {
             return true;
         } catch (HeadlessException e) {
             return false;
+        }
+    }
+
+    public static void onHyperLinkClick(HyperlinkEvent e, URI URI, Component parentComponent) {
+        if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+            try {
+                Desktop.getDesktop().browse(URI);
+            } catch (IOException ex) {
+                showOutput(parentComponent, ex.getMessage());
+            }
         }
     }
 

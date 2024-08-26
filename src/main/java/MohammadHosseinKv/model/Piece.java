@@ -1,6 +1,6 @@
 package main.java.MohammadHosseinKv.model;
 
-import main.java.MohammadHosseinKv.util.Constants;
+import static main.java.MohammadHosseinKv.util.Constants.*;
 
 import javax.swing.*;
 
@@ -25,7 +25,7 @@ public abstract class Piece {
     }
 
     public String getPowerAssetResourcePath() {
-        return Constants.RESOURCES_FOLDER_PATH + (Power + 26) + "_Chess Crusader.png";
+        return RESOURCES_FOLDER_PATH + (Power + 26) + "_Chess Crusader.png";
     }
 
     public int getX() {

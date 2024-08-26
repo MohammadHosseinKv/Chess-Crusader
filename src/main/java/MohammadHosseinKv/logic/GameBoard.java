@@ -1,7 +1,5 @@
 package main.java.MohammadHosseinKv.logic;
 
-import main.java.MohammadHosseinKv.model.Piece;
-
 public interface GameBoard {
 
     Object[][] GameTiles = new Object[8][8];

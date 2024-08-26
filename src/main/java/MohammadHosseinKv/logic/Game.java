@@ -3,13 +3,10 @@ package main.java.MohammadHosseinKv.logic;
 import main.java.MohammadHosseinKv.controller.GameController;
 import main.java.MohammadHosseinKv.model.*;
 
-import static main.java.MohammadHosseinKv.model.Side.BLACK;
-import static main.java.MohammadHosseinKv.model.Side.WHITE;
+import static main.java.MohammadHosseinKv.model.Side.*;
 import static main.java.MohammadHosseinKv.util.Util.*;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Game implements GameBoard {
 
@@ -56,7 +53,8 @@ public class Game implements GameBoard {
         // calculate pieces power
         for (int i = 0; i < GameTiles.length; i++) {
             for (int j = 0; j < GameTiles[i].length; j++) {
-                if (GameTiles[i][j] != null && GameTiles[i][j] instanceof Piece piece) {
+                if (GameTiles[i][j] != null && GameTiles[i][j] instanceof Piece) {
+                    Piece piece = (Piece) GameTiles[i][j];
                     calculatePower(piece);
                 }
             }
@@ -67,7 +65,7 @@ public class Game implements GameBoard {
     public void movePiece(int row, int col, int destRow, int destCol) {
         Piece piece = (Piece) GameTiles[row][col];
         Set<Piece> adjacentPieces = new HashSet<>();
-        if (piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+        if (piece instanceof canAdjustAdjacentPiecesPower) {
             adjacentPieces.addAll(getAdjacentPieces(row, col));
             adjacentPieces.addAll(getAdjacentPieces(destRow, destCol));
         }
@@ -89,7 +87,8 @@ public class Game implements GameBoard {
     }
 
     private boolean checkWinCondition(int destRow, int destCol) {
-        if (GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle castle) {
+        if (GameTiles[destRow][destCol] != null && GameTiles[destRow][destCol] instanceof Castle) {
+            Castle castle = (Castle) GameTiles[destRow][destCol];
             if (castle.getSide() != this.side) {
                 controller.gameOver(this.side, true);
                 return true;
@@ -119,8 +118,9 @@ public class Game implements GameBoard {
             int dirX = ADJACENT_DIRECTIONS[j][0];
             int dirY = ADJACENT_DIRECTIONS[j][1];
             if (coordinateIsInGameBounds(row + dirY, col + dirX)) {
-                if (GameTiles[row + dirY][col + dirX] != null && GameTiles[row + dirY][col + dirX] instanceof canIncreaseOrDecreaseAdjacentPiecesPower pieceThatCanIncreaseOrDecreaseAdjacentPiecesPower) {
-                    pieceThatCanIncreaseOrDecreaseAdjacentPiecesPower.increaseOrDecreaseAdjacentPiecesPower(piece);
+                if (GameTiles[row + dirY][col + dirX] != null && GameTiles[row + dirY][col + dirX] instanceof canAdjustAdjacentPiecesPower) {
+                    canAdjustAdjacentPiecesPower pieceThatCanAdjustAdjacentPiecesPower = (canAdjustAdjacentPiecesPower) GameTiles[row + dirY][col + dirX];
+                    pieceThatCanAdjustAdjacentPiecesPower.adjustAdjacentPiecesPower(piece);
                 }
             }
         }

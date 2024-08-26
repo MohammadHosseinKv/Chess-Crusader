@@ -1,18 +1,16 @@
 package main.java.MohammadHosseinKv.model;
 
 import main.java.MohammadHosseinKv.logic.GameBoard;
-import main.java.MohammadHosseinKv.logic.canIncreaseOrDecreaseAdjacentPiecesPower;
-import main.java.MohammadHosseinKv.util.Constants;
+import main.java.MohammadHosseinKv.logic.canAdjustAdjacentPiecesPower;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static main.java.MohammadHosseinKv.model.Side.WHITE;
-import static main.java.MohammadHosseinKv.util.Constants.RESOURCES_FOLDER_PATH;
-import static main.java.MohammadHosseinKv.util.Util.ADJACENT_DIRECTIONS;
-import static main.java.MohammadHosseinKv.util.Util.coordinateIsInGameBounds;
+import static main.java.MohammadHosseinKv.model.Side.*;
+import static main.java.MohammadHosseinKv.util.Constants.*;
+import static main.java.MohammadHosseinKv.util.Util.*;
 
-public class Assassin extends Piece implements canIncreaseOrDecreaseAdjacentPiecesPower {
+public class Assassin extends Piece implements canAdjustAdjacentPiecesPower {
 
     public Assassin(int x, int y, Side Side) {
         super(x, y, Side, 0, 1);
@@ -36,7 +34,8 @@ public class Assassin extends Piece implements canIncreaseOrDecreaseAdjacentPiec
                 if (coordinateIsInGameBounds(row, col)) {
                     if (GameBoard.GameTiles[row][col] == null) {
                         possibleMoves.add(new Integer[]{col, row});
-                    } else if (GameBoard.GameTiles[row][col] instanceof Piece piece) {
+                    } else if (GameBoard.GameTiles[row][col] instanceof Piece) {
+                        Piece piece = (Piece) GameBoard.GameTiles[row][col];
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
                             possibleMoves.add(new Integer[]{col, row});
                         }
@@ -49,7 +48,7 @@ public class Assassin extends Piece implements canIncreaseOrDecreaseAdjacentPiec
     }
 
     @Override
-    public void increaseOrDecreaseAdjacentPiecesPower(Piece targetPiece) {
+    public void adjustAdjacentPiecesPower(Piece targetPiece) {
         if (!targetPiece.getSide().equals(this.Side)) {
             targetPiece.setTemporaryPower(targetPiece.getTemporaryPower() - 2);
             targetPiece.setPower(targetPiece.getPower() - 2);

@@ -1,15 +1,12 @@
 package main.java.MohammadHosseinKv.model;
 
-import main.java.MohammadHosseinKv.logic.GameBoard;
-import main.java.MohammadHosseinKv.util.Constants;
+import main.java.MohammadHosseinKv.logic.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import static main.java.MohammadHosseinKv.model.Side.WHITE;
-import static main.java.MohammadHosseinKv.util.Constants.RESOURCES_FOLDER_PATH;
-import static main.java.MohammadHosseinKv.util.Util.ADJACENT_DIRECTIONS;
-import static main.java.MohammadHosseinKv.util.Util.coordinateIsInGameBounds;
+import static main.java.MohammadHosseinKv.model.Side.*;
+import static main.java.MohammadHosseinKv.util.Constants.*;
+import static main.java.MohammadHosseinKv.util.Util.*;
 
 public class Knight extends Piece {
 
@@ -19,7 +16,7 @@ public class Knight extends Piece {
 
     @Override
     public String getAssetResourcePath() {
-        return RESOURCES_FOLDER_PATH+(this.Side.equals(WHITE) ? 17 : 18) + "_Chess Crusader.png";
+        return RESOURCES_FOLDER_PATH + (this.Side.equals(WHITE) ? 17 : 18) + "_Chess Crusader.png";
     }
 
 
@@ -32,10 +29,11 @@ public class Knight extends Piece {
             for (int i = 0; i < moveDirections.length; i++) {
                 int row = y + moveDirections[i][1] * moveRadius;
                 int col = x + moveDirections[i][0] * moveRadius;
-                if(coordinateIsInGameBounds(row,col)) {
+                if (coordinateIsInGameBounds(row, col)) {
                     if (GameBoard.GameTiles[row][col] == null) {
                         possibleMoves.add(new Integer[]{col, row});
-                    } else if (GameBoard.GameTiles[row][col] instanceof Piece piece) {
+                    } else if (GameBoard.GameTiles[row][col] instanceof Piece) {
+                        Piece piece = (Piece) GameBoard.GameTiles[row][col];
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
                             possibleMoves.add(new Integer[]{col, row});
                         }

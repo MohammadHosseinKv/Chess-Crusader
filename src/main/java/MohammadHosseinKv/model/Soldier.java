@@ -1,17 +1,14 @@
 package main.java.MohammadHosseinKv.model;
 
-import main.java.MohammadHosseinKv.logic.GameBoard;
-import main.java.MohammadHosseinKv.logic.canIncreaseOrDecreaseAdjacentPiecesPower;
-import main.java.MohammadHosseinKv.util.Constants;
+import main.java.MohammadHosseinKv.logic.*;
 
-import static main.java.MohammadHosseinKv.util.Constants.RESOURCES_FOLDER_PATH;
+import static main.java.MohammadHosseinKv.util.Constants.*;
 import static main.java.MohammadHosseinKv.util.Util.*;
 import static main.java.MohammadHosseinKv.model.Side.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public class Soldier extends Piece implements canIncreaseOrDecreaseAdjacentPiecesPower {
+public class Soldier extends Piece implements canAdjustAdjacentPiecesPower {
 
     public Soldier(int x, int y, Side Side) {
         super(x, y, Side, 1, 1);
@@ -25,12 +22,16 @@ public class Soldier extends Piece implements canIncreaseOrDecreaseAdjacentPiece
 
     @Override
     public Integer[][] getMoveDirections() {
-        int[][] moveDirections;
+        int[][] moveDirections = new int[0][];
         List<Integer[]> possibleMoves = new ArrayList<>();
-        moveDirections = switch (this.Side) {
-            case WHITE -> new int[][]{SOUTH_WEST_DIRECTION, SOUTH_DIRECTION, SOUTH_EAST_DIRECTION};
-            case BLACK -> new int[][]{NORTH_WEST_DIRECTION, NORTH_DIRECTION, NORTH_EAST_DIRECTION};
-        };
+        switch (this.Side) {
+            case WHITE:
+                moveDirections = new int[][]{SOUTH_WEST_DIRECTION, SOUTH_DIRECTION, SOUTH_EAST_DIRECTION};
+                break;
+            case BLACK:
+                moveDirections = new int[][]{NORTH_WEST_DIRECTION, NORTH_DIRECTION, NORTH_EAST_DIRECTION};
+                break;
+        }
 
         int moveRadius = this.moveRadius;
         while (moveRadius > 0) {
@@ -40,7 +41,8 @@ public class Soldier extends Piece implements canIncreaseOrDecreaseAdjacentPiece
                 if (coordinateIsInGameBounds(row, col)) {
                     if (GameBoard.GameTiles[row][col] == null) {
                         possibleMoves.add(new Integer[]{col, row});
-                    } else if (GameBoard.GameTiles[row][col] instanceof Piece piece) {
+                    } else if (GameBoard.GameTiles[row][col] instanceof Piece) {
+                        Piece piece = (Piece) GameBoard.GameTiles[row][col];
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
                             possibleMoves.add(new Integer[]{col, row});
                         }
@@ -54,7 +56,7 @@ public class Soldier extends Piece implements canIncreaseOrDecreaseAdjacentPiece
     }
 
     @Override
-    public void increaseOrDecreaseAdjacentPiecesPower(Piece targetPiece) {
+    public void adjustAdjacentPiecesPower(Piece targetPiece) {
         if (targetPiece.getSide().equals(this.Side) && targetPiece instanceof Soldier) {
             targetPiece.setTemporaryPower(targetPiece.getTemporaryPower() + 1);
             targetPiece.setPower(targetPiece.getPower() + 1);

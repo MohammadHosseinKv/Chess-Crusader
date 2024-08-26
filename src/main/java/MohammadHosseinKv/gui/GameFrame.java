@@ -9,8 +9,7 @@ import static main.java.MohammadHosseinKv.util.Util.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
@@ -21,14 +20,14 @@ public class GameFrame extends JFrame {
     private static final Integer SELECT_PIECE_BACKGROUND_LAYER = 20;
     private static final Integer PIECE_LAYER = 100;
     private static final Integer PIECE_MOVEABLE_LAYER = 200;
-    GameController controller;
-    JLayeredPane layeredPane;
-    Side Turn;
-    Side side;
-    Map<Piece, List<JLabel>> moveLabels = new HashMap<>();
-    Map<Point, JLabel> pieceLabelMap = new HashMap<>();
-    int TILE_WIDTH = TILE_DIMENSION.width;
-    int TILE_HEIGHT = TILE_DIMENSION.height;
+    private GameController controller;
+    private JLayeredPane layeredPane;
+    private Side Turn;
+    private final Side side;
+    private Map<Piece, List<JLabel>> moveLabels = Collections.synchronizedMap(new HashMap<>());
+    private Map<Point, JLabel> pieceLabelMap = Collections.synchronizedMap(new HashMap<>());
+    private final int TILE_WIDTH = TILE_DIMENSION.width;
+    private final int TILE_HEIGHT = TILE_DIMENSION.height;
 
     public GameFrame(Side side, GameController controller, Side Turn) {
         super();
@@ -94,60 +93,15 @@ public class GameFrame extends JFrame {
         for (int i = 0; i < NUMBER_OF_TILES; i++) {
             int row = y / TILE_HEIGHT;
             int col = x / TILE_WIDTH;
-            if (GameBoard.GameTiles[row][col] != null && GameBoard.GameTiles[row][col] instanceof Piece piece) {
-
+            if (GameBoard.GameTiles[row][col] != null && GameBoard.GameTiles[row][col] instanceof Piece) {
+                Piece piece = (Piece) GameBoard.GameTiles[row][col];
                 JLabel pieceLabel = createPieceLabel(piece);
                 addPieceToBoard(row, col, pieceLabel);
                 createPiecePowerLabel(piece);
                 pieceLabel.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        if (e.getButton() == MouseEvent.BUTTON1) {
-                            if (side.equals(Turn) && piece.getSide().equals(side)) {
-                                if (piece.isSelected()) {
-                                    piece.setSelected(false);
-                                    clearMoveLabels();
-                                } else {
-                                    piece.setSelected(true);
-                                    int pieceCol = piece.getX();
-                                    int pieceRow = piece.getY();
-                                    JLabel selectedPieceBgLabel = createSelectedPieceBackgroundLabel(pieceCol, pieceRow);
-                                    clearMoveLabels();
-                                    List<JLabel> selectedPieceMoveLabels = new ArrayList<>();
-                                    selectedPieceMoveLabels.add(selectedPieceBgLabel);
-                                    layeredPane.add(selectedPieceBgLabel, SELECT_PIECE_BACKGROUND_LAYER);
-
-                                    Integer[][] pieceMoveDirections = piece.getMoveDirections();
-                                    for (int i = 0; i < pieceMoveDirections.length; i++) {
-                                        int moveLabelCol = pieceMoveDirections[i][0];
-                                        int moveLabelRow = pieceMoveDirections[i][1];
-                                        JLabel pieceMoveLabel = createPieceMoveLabel(moveLabelCol, moveLabelRow);
-                                        selectedPieceMoveLabels.add(pieceMoveLabel);
-                                        layeredPane.add(pieceMoveLabel, PIECE_MOVEABLE_LAYER);
-                                        layeredPane.repaint();
-                                        pieceMoveLabel.addMouseListener(new MouseAdapter() {
-                                            @Override
-                                            public void mouseClicked(MouseEvent e) {
-                                                if (e.getButton() == MouseEvent.BUTTON1) {
-                                                    int destRow = pieceMoveLabel.getY() / TILE_HEIGHT;
-                                                    int destCol = pieceMoveLabel.getX() / TILE_WIDTH;
-                                                    piece.setSelected(false);
-                                                    if (GameBoard.GameTiles[destRow][destCol] == null) {
-                                                        controller.movePiece(pieceRow, pieceCol, destRow, destCol, true);
-                                                    } else if (GameBoard.GameTiles[destRow][destCol] instanceof Piece) {
-                                                        controller.attackPiece(pieceRow, pieceCol, destRow, destCol, true);
-                                                    }
-                                                    clearMoveLabels();
-                                                }
-                                            }
-                                        });
-                                    }
-                                    moveLabels.put(piece, selectedPieceMoveLabels);
-
-                                }
-                            } else if (!side.equals(Turn)) showOutput(GameFrame.this, "It's not your turn");
-                            else showOutput(GameFrame.this, "cannot control enemy's piece.");
-                        }
+                        handlePieceSelection(e, piece);
                     }
                 });
 
@@ -163,6 +117,60 @@ public class GameFrame extends JFrame {
         layeredPane.repaint();
     }
 
+    private void handlePieceSelection(MouseEvent e, Piece piece) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            if (side.equals(Turn) && piece.getSide().equals(side)) {
+                if (piece.isSelected()) {
+                    piece.setSelected(false);
+                    clearMoveLabels();
+                } else {
+                    piece.setSelected(true);
+                    clearMoveLabels();
+                    createSelectedPieceMoveLabels(e, piece);
+                }
+            } else if (!side.equals(Turn)) showOutput(GameFrame.this, "It's not your turn");
+            else showOutput(GameFrame.this, "cannot control enemy's piece.");
+        }
+    }
+
+    private void createSelectedPieceMoveLabels(MouseEvent e, Piece piece) {
+        int pieceCol = piece.getX();
+        int pieceRow = piece.getY();
+        JLabel selectedPieceBgLabel = createSelectedPieceBackgroundLabel(pieceCol, pieceRow);
+        List<JLabel> selectedPieceMoveLabels = new ArrayList<>();
+        selectedPieceMoveLabels.add(selectedPieceBgLabel);
+        layeredPane.add(selectedPieceBgLabel, SELECT_PIECE_BACKGROUND_LAYER);
+
+        Integer[][] pieceMoveDirections = piece.getMoveDirections();
+        for (int i = 0; i < pieceMoveDirections.length; i++) {
+            int moveLabelCol = pieceMoveDirections[i][0];
+            int moveLabelRow = pieceMoveDirections[i][1];
+            JLabel pieceMoveLabel = createPieceMoveLabel(moveLabelCol, moveLabelRow);
+            selectedPieceMoveLabels.add(pieceMoveLabel);
+            layeredPane.add(pieceMoveLabel, PIECE_MOVEABLE_LAYER);
+            layeredPane.repaint();
+            pieceMoveLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getButton() == MouseEvent.BUTTON1) {
+                        handlePieceAction(e, piece, pieceRow, pieceCol, moveLabelRow, moveLabelCol);
+                    }
+                }
+            });
+        }
+        moveLabels.put(piece, selectedPieceMoveLabels);
+    }
+
+    private void handlePieceAction(MouseEvent e, Piece piece, int curRow, int curCol, int destRow, int destCol) {
+        piece.setSelected(false);
+        if (GameBoard.GameTiles[destRow][destCol] == null) {
+            controller.movePiece(curRow, curCol, destRow, destCol, true);
+        } else if (GameBoard.GameTiles[destRow][destCol] instanceof Piece) {
+            controller.attackPiece(curRow, curCol, destRow, destCol, true);
+        }
+        clearMoveLabels();
+    }
+
     public void updateUIAfterMove(int row, int col, int destRow, int destCol) {
         Piece piece = (Piece) GameBoard.GameTiles[destRow][destCol];
         JLabel pieceLabel = getPieceLabelAt(row, col);
@@ -172,7 +180,7 @@ public class GameFrame extends JFrame {
             pieceLabel.setBounds(destCol * TILE_WIDTH, destRow * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
         }
         Set<Piece> adjacentPieces = new HashSet<>();
-        if (piece instanceof canIncreaseOrDecreaseAdjacentPiecesPower) {
+        if (piece instanceof canAdjustAdjacentPiecesPower) {
             adjacentPieces.addAll(getAdjacentPieces(row, col));
             adjacentPieces.addAll(getAdjacentPieces(destRow, destCol));
         }

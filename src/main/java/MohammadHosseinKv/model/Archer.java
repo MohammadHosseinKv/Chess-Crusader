@@ -5,10 +5,9 @@ import main.java.MohammadHosseinKv.logic.GameBoard;
 import java.util.ArrayList;
 import java.util.List;
 
-import static main.java.MohammadHosseinKv.model.Side.WHITE;
-import static main.java.MohammadHosseinKv.util.Constants.RESOURCES_FOLDER_PATH;
-import static main.java.MohammadHosseinKv.util.Util.ADJACENT_DIRECTIONS;
-import static main.java.MohammadHosseinKv.util.Util.coordinateIsInGameBounds;
+import static main.java.MohammadHosseinKv.model.Side.*;
+import static main.java.MohammadHosseinKv.util.Constants.*;
+import static main.java.MohammadHosseinKv.util.Util.*;
 
 public class Archer extends Piece {
 
@@ -35,7 +34,8 @@ public class Archer extends Piece {
                 if (coordinateIsInGameBounds(row, col)) {
                     if (GameBoard.GameTiles[row][col] == null) {
                         possibleMoves.add(new Integer[]{col, row});
-                    } else if (GameBoard.GameTiles[row][col] instanceof Piece piece) {
+                    } else if (GameBoard.GameTiles[row][col] instanceof Piece) {
+                        Piece piece = (Piece) GameBoard.GameTiles[row][col];
                         if (!piece.getSide().equals(this.Side) && piece.getPower() <= this.Power) {
                             possibleMoves.add(new Integer[]{col, row});
                         }

@@ -1,19 +1,18 @@
 package main.java.MohammadHosseinKv.gui;
 
 import main.java.MohammadHosseinKv.controller.GameController;
-import main.java.MohammadHosseinKv.model.Side;
 import main.java.MohammadHosseinKv.network.SocketManager;
 
+import static main.java.MohammadHosseinKv.model.Side.*;
 import static main.java.MohammadHosseinKv.util.Util.*;
 import static main.java.MohammadHosseinKv.util.Constants.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Objects;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 public class StartFrame extends JFrame {
 
@@ -37,13 +36,23 @@ public class StartFrame extends JFrame {
         JLabel GameTitle = new JLabel(TitleImage);
         GameTitle.setBounds((getWidth() / 3) - (getWidth() / 4), (getHeight() / 40), (int) (getWidth() / 1.2), getHeight() / 3);
 
-        JButton CreateGame = createButton("Create Game", -120, (getHeight() / 2) - 100, 150, 50, Color.WHITE, Color.BLACK, Color.BLACK);
+        JButton CreateGame = createButton("Create Game", (getWidth() / 2) - (150 / 2), ((getHeight() / 2) - 100) - (50 / 2),
+                150, 50, Color.WHITE, Color.BLACK, Color.RED);
         CreateGame.addActionListener(this::handleCreateGameButtonAction);
-        JButton JoinGame = createButton("Join Game", -120, getHeight() / 2, 150, 50, Color.WHITE, Color.BLACK, Color.BLACK);
+        JButton JoinGame = createButton("Join Game", (getWidth() / 2) - (150 / 2), (getHeight() / 2) - (50 / 2),
+                150, 50, Color.WHITE, Color.BLACK, Color.RED);
         JoinGame.addActionListener(this::handleJoinGameButtonAction);
+        JButton GameDocument = createButton("Game Document", (getWidth() / 2) - (150 / 2), ((getHeight() / 2) + 100) - (50 / 2),
+                150, 50, Color.WHITE, Color.BLACK, Color.RED);
+        GameDocument.addActionListener(this::handleGameDocumentButtonAction);
+        JButton GitHubRepo = createButton("GitHub Repository", (getWidth() / 2) - (150 / 2), ((getHeight() / 2) + 200) - (50 / 2),
+                150, 50, Color.WHITE, Color.BLACK, Color.RED);
+        GitHubRepo.addActionListener(this::handleGitHubRepoButtonAction);
 
         add(CreateGame);
         add(JoinGame);
+        add(GameDocument);
+        add(GitHubRepo);
         add(GameTitle);
         add(FrameBackground);
         centralizeFrame(this);
@@ -60,23 +69,22 @@ public class StartFrame extends JFrame {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                handleMouseEnterAndExitToButton(e, button, x + 120, y, width, height, Color.WHITE, Color.BLACK, Color.BLACK);
+                handleMouseEnterAndExitToButton(e, button, foregroundColor, borderColor, backgroundColor);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                handleMouseEnterAndExitToButton(e, button, x, y, width, height, Color.WHITE, Color.BLACK, Color.BLACK);
+                handleMouseEnterAndExitToButton(e, button, backgroundColor, borderColor, foregroundColor);
             }
         });
 
         return button;
     }
 
-    private void handleMouseEnterAndExitToButton(MouseEvent e, JButton button, int x, int y, int width, int height, Color backgroundColor, Color borderColor, Color foregroundColor) {
+    private void handleMouseEnterAndExitToButton(MouseEvent e, JButton button, Color backgroundColor, Color borderColor, Color foregroundColor) {
         button.setBackground(backgroundColor);
         button.setBorder(BorderFactory.createLineBorder(borderColor));
         button.setForeground(foregroundColor);
-        button.setBounds(x, y, width, height);
         button.repaint();
     }
 
@@ -84,7 +92,7 @@ public class StartFrame extends JFrame {
         try {
             Socket socket = new Socket(SERVER_IP, SERVER_PORT);
             this.dispose();
-            new GameController(Side.BLACK, new SocketManager(socket));
+            new GameController(BLACK, new SocketManager(socket));
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());
@@ -95,11 +103,49 @@ public class StartFrame extends JFrame {
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
             Socket socket = serverSocket.accept();
             this.dispose();
-            new GameController(Side.WHITE, new SocketManager(socket));
+            new GameController(WHITE, new SocketManager(socket));
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());
         }
     }
+
+    private void handleGameDocumentButtonAction(ActionEvent actionEvent) {
+        if (Desktop.isDesktopSupported()) {
+            try {
+                File gameDocument = new File(GAME_DOCUMENT_PDF_FILE_PATH);
+                if (gameDocument.exists()) {
+                    Desktop.getDesktop().open(gameDocument);
+                } else {
+                    showOutput(this, "Document File Doesn't Exist in " + System.getProperty("user.dir") + "\\" + GAME_DOCUMENT_PDF_FILE_PATH);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                showOutput(this, e.getMessage());
+            }
+        } else {
+            showOutput(this, "OS Desktop is not supported for JDK.");
+        }
+    }
+
+    private void handleGitHubRepoButtonAction(ActionEvent actionEvent) {
+        String htmlLink = "<html>" +
+                "Click the link below to redirect to GitHub repository: <br>" +
+                "<a href='" + GITHUB_REPOSITORY + "'>" + GITHUB_REPOSITORY + "</a>" +
+                "</html>";
+        JEditorPane editorPane = new JEditorPane("text/html", htmlLink);
+        editorPane.setFont(new Font("Arial", Font.PLAIN, 25));
+        editorPane.setEditable(false);
+        editorPane.setOpaque(false);
+        editorPane.addHyperlinkListener(e -> {
+            try {
+                onHyperLinkClick(e, new URI(GITHUB_REPOSITORY), this);
+            } catch (URISyntaxException ex) {
+                showOutput(this, ex.getMessage());
+            }
+        });
+        showOutput(this, editorPane);
+    }
+
 
 }

@@ -1,6 +1,6 @@
 package main.java.MohammadHosseinKv;
 
-import main.java.MohammadHosseinKv.gui.StartFrame;
+import main.java.MohammadHosseinKv.gui.*;
 import javax.swing.*;
 
 public class Main extends JFrame {
