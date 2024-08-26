@@ -271,7 +271,7 @@ positions, etc.
 • This file provides an overview of the project, including installation instructions, gameplay details, and more.
 
 ### AP14022-FinalProject.pdf
-• [Guilan University's CE Advanced Programming project document that game is based on.](https://github.com/MohammadHosseinKv/Chess-Crusader/AP14022-FinalProject.pdf)
+• [Guilan University's CE Advanced Programming project document that game is based on.](https://github.com/MohammadHosseinKv/Chess-Crusader/blob/master/AP14022-FinalProject.pdf)
 
 ## License
 
@@ -279,4 +279,4 @@ This project is licensed under the MIT License. See the `LICENSE` file for more 
 
 ## Contact
 For any questions or feedback, you can reach me at [MohammadHossein.Kv@gmail.com] or through my GitHub profile
-@MohammadHosseinKv.
+[@MohammadHosseinKv](https://github.com/MohammadHosseinKv).
