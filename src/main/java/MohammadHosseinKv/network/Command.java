@@ -1,4 +1,4 @@
-package main.java.MohammadHosseinKv.logic;
+package main.java.MohammadHosseinKv.network;
 
 public enum Command {
     MOVE_PIECE,

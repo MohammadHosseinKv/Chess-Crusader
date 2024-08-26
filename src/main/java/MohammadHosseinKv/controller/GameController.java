@@ -8,7 +8,7 @@ import main.java.MohammadHosseinKv.network.*;
 import javax.swing.*;
 import java.io.IOException;
 
-import static main.java.MohammadHosseinKv.logic.Command.*;
+import static main.java.MohammadHosseinKv.network.Command.*;
 import static main.java.MohammadHosseinKv.util.Constants.*;
 import static main.java.MohammadHosseinKv.util.Util.*;
 
