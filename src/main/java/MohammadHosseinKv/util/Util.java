@@ -52,6 +52,14 @@ public final class Util {
         }
     }
 
+    public static int showOptionDialog(Component parentComponent, String message, String title, int optionType, int messageType, Object[] options, Object initialSelection) {
+        try {
+            return JOptionPane.showOptionDialog(parentComponent, message, title, optionType, messageType, null, options, initialSelection);
+        } catch (HeadlessException e) {
+            return -1;
+        }
+    }
+
     public static void onHyperLinkClick(HyperlinkEvent e, URI URI, Component parentComponent) {
         if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
             try {
