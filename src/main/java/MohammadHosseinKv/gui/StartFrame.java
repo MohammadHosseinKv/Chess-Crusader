@@ -93,6 +93,8 @@ public class StartFrame extends JFrame {
             Socket socket = new Socket(SERVER_IP, SERVER_PORT);
             this.dispose();
             new GameController(BLACK, new SocketManager(socket));
+        } catch (ConnectException ex) {
+            showOutput(this, "Couldn't find any server to join.");
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());
@@ -100,10 +102,40 @@ public class StartFrame extends JFrame {
     }
 
     private void handleCreateGameButtonAction(ActionEvent e) {
-        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-            Socket socket = serverSocket.accept();
-            this.dispose();
-            new GameController(WHITE, new SocketManager(socket));
+        try {
+            Thread createServer = new Thread() {
+                ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+
+                @Override
+                public void run() {
+                    try {
+                        Socket socket = serverSocket.accept();
+                        StartFrame.this.dispose();
+                        new GameController(WHITE, new SocketManager(socket));
+                    } catch (SocketException ex) {
+                        return;
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        showOutput(StartFrame.this, ex.getMessage());
+                    }
+                }
+
+                @Override
+                public void interrupt() {
+                    super.interrupt();
+                    try {
+                        serverSocket.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                        showOutput(StartFrame.this, ex.getMessage());
+                    }
+                }
+            };
+            createServer.start();
+            showOptionDialog(this, "Server Created. Waiting for opponent to join game.", "Server Created", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, new Object[]{"Cancel"}, "Cancel");
+            createServer.interrupt(); // Stop createServer Thread after clicking on cancel button or closing dialog
+        } catch (BindException ex) {
+            showOutput(this, "Server is already created. Waiting for opponent to join Game.");
         } catch (IOException ex) {
             ex.printStackTrace();
             showOutput(this, ex.getMessage());
@@ -113,14 +145,8 @@ public class StartFrame extends JFrame {
     private void handleGameDocumentButtonAction(ActionEvent actionEvent) {
         if (Desktop.isDesktopSupported()) {
             try {
-                File gameDocument = new File(GAME_DOCUMENT_PDF_FILE_PATH);
-                if (gameDocument.exists()) {
-                    Desktop.getDesktop().open(gameDocument);
-                } else {
-                    showOutput(this, "Document File Doesn't Exist in " + System.getProperty("user.dir") + "\\" + GAME_DOCUMENT_PDF_FILE_PATH);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+                Desktop.getDesktop().browse(new URL(GAME_DOCUMENT_MD_FILE_URL_PATH).toURI());
+            } catch (IOException | URISyntaxException e) {
                 showOutput(this, e.getMessage());
             }
         } else {
